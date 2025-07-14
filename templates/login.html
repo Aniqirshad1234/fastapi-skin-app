@@ -1,6 +1,3 @@
-{% if message %}
-  <div class="alert">{{ message }}</div>
-{% endif %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -157,6 +154,12 @@
         <div class="auth-header">
             <h1>Welcome Back</h1>
             <p></p>
+          {% if message %}
+  <div class="alert {% if 'successfully' in message %}alert-success{% else %}alert-error{% endif %}">
+    {{ message }}
+  </div>
+{% endif %}
+
         </div>
         {# Flash messages will be handled differently in FastAPI #}
 
