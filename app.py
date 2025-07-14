@@ -265,34 +265,35 @@ async def home(request: Request):
         })
     return RedirectResponse(url="/login", status_code=302)
 
+from fastapi import status
+
 # Signup
 @app.get("/signup", response_class=HTMLResponse)
-def signup_form(request: Request):
-    return templates.TemplateResponse("signup.html", {"request": request})
+def signup_form(request: Request, message: str = ""):
+    return templates.TemplateResponse("signup.html", {"request": request, "message": message})
 
 @app.post("/signup")
 def signup(request: Request, username: str = Form(...), password: str = Form(...), confirm_password: str = Form(...)):
     if password != confirm_password:
-        return RedirectResponse("/signup", status_code=302)
+        return RedirectResponse("/signup?message=Passwords+do+not+match", status_code=status.HTTP_302_FOUND)
 
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
     c.execute("SELECT id FROM users WHERE username=?", (username,))
     if c.fetchone():
         conn.close()
-        return RedirectResponse("/signup", status_code=302)
+        return RedirectResponse("/signup?message=User+already+registered", status_code=status.HTTP_302_FOUND)
 
     hashed_password = pbkdf2_sha256.hash(password)
-
     c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
     conn.commit()
     conn.close()
-    return RedirectResponse("/login", status_code=302)
+    return RedirectResponse("/login?message=Registration+successful", status_code=status.HTTP_302_FOUND)
 
 # Login
 @app.get("/login", response_class=HTMLResponse)
-def login_form(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+def login_form(request: Request, message: str = ""):
+    return templates.TemplateResponse("login.html", {"request": request, "message": message})
 
 @app.post("/login")
 def login(request: Request, username: str = Form(...), password: str = Form(...)):
@@ -303,14 +304,14 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
     conn.close()
     if user and pbkdf2_sha256.verify(password, user[1]):
         request.session["username"] = username
-        return RedirectResponse("/", status_code=302)
-    return RedirectResponse("/login", status_code=302)
+        return RedirectResponse("/?message=Login+successful", status_code=302)
+    return RedirectResponse("/login?message=Invalid+username+or+password", status_code=302)
 
 # Logout
 @app.get("/logout")
 def logout(request: Request):
     request.session.clear()
-    return RedirectResponse("/login", status_code=302)
+    return RedirectResponse("/login?message=Logged+out+successfully", status_code=302)
 
 # Predict
 @app.post("/predict", response_class=HTMLResponse)
