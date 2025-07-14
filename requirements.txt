@@ -6,3 +6,4 @@ numpy==1.21.6
 passlib
 python-multipart
 itsdangerous
+Pillow
