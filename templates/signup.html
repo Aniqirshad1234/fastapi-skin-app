@@ -1,6 +1,3 @@
-{% if message %}
-  <div class="alert">{{ message }}</div>
-{% endif %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -160,6 +157,12 @@
 </head>
 <body>
     <div class="auth-container">
+      {% if message %}
+  <div class="alert {% if 'successful' in message %}alert-success{% else %}alert-error{% endif %}">
+    {{ message }}
+  </div>
+{% endif %}
+
         <div class="auth-header">
             <h1>Create Account</h1>
             <p>Join DermAI today</p>
