@@ -319,20 +319,36 @@ async def predict(request: Request, file: UploadFile = File(...)):
     if not username:
         return RedirectResponse("/login", status_code=302)
 
+    # Check file extension
     if not allowed_file(file.filename):
         raise HTTPException(status_code=400, detail="Invalid file format.")
 
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
     try:
+        # Ensure upload folder exists
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+        # Save uploaded file
+        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Optional: Clean old uploads (prevent clutter)
+        # for old_file in os.listdir(UPLOAD_FOLDER):
+        #     os.remove(os.path.join(UPLOAD_FOLDER, old_file))
+
+        # Preprocess image
+        print("Preprocessing image:", file_path)
         img = preprocess_image(file_path)
+        print("Image shape:", img.shape)
+
+        # Predict
         prediction = model.predict(img)
+        print("Raw prediction output:", prediction)
+
         predicted_class = class_names[np.argmax(prediction)]
         confidence = float(np.max(prediction)) * 100
 
+        # Save results to session
         request.session["prediction"] = predicted_class
         request.session["confidence"] = f"{confidence:.2f}"
         request.session["image_path"] = "/" + file_path.replace("\\", "/")
@@ -340,7 +356,10 @@ async def predict(request: Request, file: UploadFile = File(...)):
         return RedirectResponse("/", status_code=302)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Prediction failed.")
+        # Reveal actual error in logs and frontend
+        print("Prediction error:", str(e))
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
 
 # Start DB
 init_db()
