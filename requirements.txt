@@ -2,5 +2,6 @@ fastapi
 uvicorn
 jinja2
 tensorflow-cpu==2.10.0
+numpy==1.21.6
 passlib
 python-multipart
