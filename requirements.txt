@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 jinja2
-tensorflow
+tensorflow-cpu==2.10.0
 passlib
 python-multipart
 sqlite3
