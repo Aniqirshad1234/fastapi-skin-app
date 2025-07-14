@@ -214,7 +214,15 @@ UPLOAD_FOLDER = "static/uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 # Load the trained model
-model = load_model("best_skin_cancer_model.h5")
+from tensorflow.keras.optimizers import Adam
+
+# Load the trained model safely for deployment
+model = load_model("best_skin_cancer_model.h5", compile=False)
+model.compile(optimizer=Adam(learning_rate=0.0001),
+              loss="categorical_crossentropy",
+              metrics=["accuracy"])
+
+
 class_names = ["Benign", "Malignant"]
 
 # Utility: Check file extension
