@@ -203,7 +203,7 @@ from passlib.hash import pbkdf2_sha256
 
 # Initialize FastAPI app
 app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key=os.urandom(24))
+app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SESSION_SECRET", "fallback-secret"))
 
 # Set static and template directories
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -347,4 +347,7 @@ init_db()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("app:app", host="0.0.0.0", port=port)
+@app.get("/healthz")
+def health_check():
+    return {"status": "ok"}
 
